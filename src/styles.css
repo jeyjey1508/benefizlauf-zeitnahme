@@ -254,6 +254,7 @@ p {
 }
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 .row {
@@ -476,8 +477,16 @@ p {
   font-weight: 700;
 }
 .banner-body {
-  flex: 1;
+  flex: 1 1 200px;
   min-width: 0;
+}
+.banner {
+  flex-wrap: wrap;
+}
+@media (max-width: 520px) {
+  .banner > .btn {
+    flex: 1 0 100%;
+  }
 }
 .banner-warn {
   background: var(--warn-soft);
@@ -827,6 +836,7 @@ p {
 /* ============ Ziel-Scanner ============ */
 .scan-layout {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 @media (min-width: 900px) {
@@ -954,7 +964,7 @@ p {
 
 .entry {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
 }
 .entry .input {
@@ -1132,7 +1142,7 @@ p {
 }
 .bib-sheet {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 14px;
 }
 .bib-card {
