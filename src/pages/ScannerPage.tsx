@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { AlertTriangle, Camera, CameraOff, CheckCircle2, Clock, Copy, Undo2, UserX, XCircle } from 'lucide-react';
+import { AlertTriangle, Camera, CloudUpload, CameraOff, CheckCircle2, Clock, Copy, Undo2, UserX, XCircle } from 'lucide-react';
 import { firstScans, registerScan, setStartTime, undoScan, useAppState, type ScanResult } from '../lib/store';
 import { FIELDS, fieldLabel, fieldOf, fullName } from '../lib/fields';
 import { clockTime, elapsedSeconds, formatDuration } from '../lib/time';
@@ -9,6 +9,7 @@ import type { ScanOutcome } from '../lib/types';
 import { CameraScanner } from '../components/CameraScanner';
 import { Checklist } from '../components/Checklist';
 import { confirmDialog, toast } from '../components/ui';
+import { isLoggedIn, syncCounts, uploadScans, useServer } from '../lib/sync';
 
 const OUTCOME: Record<ScanOutcome, { title: string; tone: 'ok' | 'warn' | 'err'; badge: string }> = {
   ok: { title: 'Gespeichert', tone: 'ok', badge: 'Gespeichert' },
@@ -22,6 +23,8 @@ const OUTCOME: Record<ScanOutcome, { title: string; tone: 'ok' | 'warn' | 'err';
 
 export function ScannerPage() {
   const s = useAppState();
+  const srv = useServer();
+  const [uploading, setUploading] = useState(false);
   const now = useNow(250);
   useWakeLock();
   const [cameraOn, setCameraOn] = usePref('cameraOn', false);
@@ -85,6 +88,19 @@ export function ScannerPage() {
   }
 
   const recent = s.events.slice(0, 15);
+  const pendingUpload = srv.eventId !== null && srv.baseUrl ? syncCounts(s.scans, s.deviceId, srv.eventId).pending : 0;
+
+  async function upload() {
+    setUploading(true);
+    try {
+      const r = await uploadScans('pending');
+      toast(`${r.sent} Zielzeiten hochgeladen.`);
+    } catch (e) {
+      toast((e as Error).message, 'err');
+    } finally {
+      setUploading(false);
+    }
+  }
 
   return (
     <div className="page">
@@ -113,6 +129,25 @@ export function ScannerPage() {
             <button className="btn" onClick={() => navigate('teilnehmer')}>
               Zu den Teilnehmern
             </button>
+          </div>
+        )}
+
+        {pendingUpload > 0 && (
+          <div className="banner banner-info">
+            <CloudUpload />
+            <div className="banner-body">
+              <div className="banner-title">{pendingUpload} Zielzeiten noch nicht auf dem Server</div>
+              <div>{isLoggedIn(srv) ? 'Hochladen, sobald Internet da ist.' : 'Anmeldung abgelaufen – in den Einstellungen neu anmelden.'}</div>
+            </div>
+            {isLoggedIn(srv) ? (
+              <button className="btn" onClick={upload} disabled={uploading}>
+                {uploading ? 'Lädt …' : 'Hochladen'}
+              </button>
+            ) : (
+              <button className="btn" onClick={() => navigate('einstellungen')}>
+                Anmelden
+              </button>
+            )}
           </div>
         )}
 

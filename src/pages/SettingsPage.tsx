@@ -9,6 +9,8 @@ import { clockTime, dateLabel, fileStamp, localToIso, toDateInput, toTimeInput }
 import { Dialog, confirmDialog, pickFile, toast } from '../components/ui';
 import { QrCode } from '../components/QrCode';
 import { useInstall } from '../lib/install';
+import { queueStartTime } from '../lib/sync';
+import { ServerCard } from '../components/ServerCard';
 
 /** "093000" → "09:30:00" während der Eingabe */
 const maskTime = (raw: string) => {
@@ -48,6 +50,7 @@ export function SettingsPage() {
       if (!ok) return;
     }
     setStartTime(now.toISOString());
+    void queueStartTime(now.toISOString());
     toast(`Startzeit ${clockTime(now.toISOString())} Uhr gesetzt.`);
   }
 
@@ -64,6 +67,7 @@ export function SettingsPage() {
       if (!ok) return;
     }
     setStartTime(iso);
+    void queueStartTime(iso);
     toast(`Startzeit ${clockTime(iso)} Uhr gesetzt.`);
   }
 
@@ -76,6 +80,7 @@ export function SettingsPage() {
     });
     if (ok) {
       setStartTime(null);
+      void queueStartTime(null);
       setTime('');
     }
   }
@@ -112,7 +117,7 @@ export function SettingsPage() {
   async function confirmClearScans() {
     const ok = await confirmDialog({
       title: 'Alle Zielzeiten löschen?',
-      message: `${scanCount} Zielzeiten werden gelöscht. Teilnehmer und Startzeit bleiben erhalten. Tipp: vorher ein Backup speichern.`,
+      message: `${scanCount} Zielzeiten werden gelöscht. Teilnehmer und Startzeit bleiben erhalten. Bereits hochgeladene Zeiten bleiben auf dem Server. Tipp: vorher ein Backup speichern.`,
       confirmLabel: 'Zielzeiten löschen',
       danger: true,
     });
@@ -242,7 +247,7 @@ export function SettingsPage() {
             <div>
               <h2 className="card-title">Daten & Backup</h2>
               <p className="card-desc">
-                {s.participants.length} Teilnehmer · {scanCount} Zielzeiten. Alle Daten bleiben nur auf diesem Gerät.
+                {s.participants.length} Teilnehmer · {scanCount} Zielzeiten. Ohne Server-Anmeldung bleiben alle Daten nur auf diesem Gerät.
               </p>
             </div>
             <div className="row">
@@ -266,6 +271,8 @@ export function SettingsPage() {
             </button>
           </section>
         </div>
+
+        <ServerCard />
 
         {/* Gerät & App */}
         <section className="card card-pad stack">

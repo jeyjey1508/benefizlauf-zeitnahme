@@ -29,6 +29,14 @@ export interface Scan {
   source: ScanSource;
   /** Gelöschte Scans bleiben als Markierung erhalten, damit das Zusammenführen sie nicht zurückholt. */
   deleted?: boolean;
+  /** Server-Upload: Event, laufende Nummer (bleibt fest) und zuletzt bestätigter Zustand */
+  api?: ScanApiState;
+}
+
+export interface ScanApiState {
+  event: number;
+  number: number;
+  sent?: 'active' | 'disabled';
 }
 
 export type ScanOutcome = 'ok' | 'duplicate' | 'unknown' | 'early' | 'nostart' | 'empty' | 'invalid';
