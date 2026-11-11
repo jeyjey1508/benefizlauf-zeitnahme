@@ -27,6 +27,23 @@ früheste Zeit.
 - Vor dem Lauf und nach dem Lauf ein **JSON-Backup** speichern.
 - Die Kamera funktioniert nur über `https://` (oder `localhost`).
 
+## Server-Anbindung (REST-API des Veranstalters)
+
+**Einstellungen → Server (REST-API)**: Server-Adresse eintragen, mit E-Mail und Passwort anmelden, Veranstaltung und
+Lauf/Läufe wählen (oder die IDs von Hand eintragen).
+
+- **Startzeit**: „Startzeit = jetzt“ bzw. „Uhrzeit übernehmen“ sendet die Startzeit automatisch an alle gewählten Läufe
+  (`PUT /rest/run/{id}/start-time`). Ohne Netz bleibt sie vorgemerkt und wird nachgesendet. Andere Geräte können sie
+  mit „Vom Server übernehmen“ holen.
+- **Zielzeiten**: Jeder Scan bekommt eine feste laufende Nummer und wird als Zeit-Eintrag (`finish-times`) **und**
+  Scan-Eintrag (`finish-scans`) mit derselben Nummer hochgeladen – ein Gerät erledigt beide Streams, die Reihenfolge
+  passt dadurch immer. „Hochladen“ sendet neue und geänderte Einträge, „Alle erneut senden“ alles noch einmal.
+- Zurückgenommene Scans werden auf dem Server mit `disabled: true` deaktiviert. Lokales Löschen löscht dort nichts.
+- Übertragen werden nur Scans dieses Geräts. Korrekturen von Hand und per Backup zusammengeführte Zeiten anderer Geräte
+  bleiben lokal und werden in der Web-App des Veranstalters korrigiert.
+- Das Passwort wird nicht gespeichert, nur das Session-Token (eigener Speicher, nicht im JSON-Backup).
+- Der Server muss Anfragen von der Adresse der App erlauben (CORS inkl. `Authorization`-Header).
+
 ## Entwicklung
 
 ```bash

@@ -204,7 +204,9 @@ export function saveParticipant(p: Participant, originalBib?: string): string | 
       ...s,
       participants: s.participants.map((x) => (x.bib === originalBib ? p : x)),
       // Startnummer geändert → Scans umhängen
-      scans: originalBib !== p.bib ? s.scans.map((sc) => (sc.bib === originalBib ? { ...sc, bib: p.bib } : sc)) : s.scans,
+      scans: originalBib !== p.bib ? s.scans.map((sc) =>
+            sc.bib === originalBib ? { ...sc, bib: p.bib, api: sc.api && { ...sc.api, sent: undefined } } : sc,
+          ) : s.scans,
     };
   });
   return null;
